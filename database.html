@@ -7,7 +7,8 @@
 </head>
 <body>
   <h1>Realtime Database Contents</h1>
-  <pre id="output"></pre>
+  <textarea id="output" style="width:100%;height:300px;"></textarea>
+  <button onclick="pushWholeDb()">Save Edited JSON</button>
 
   <h2>Edit Value</h2>
   <input type="text" id="dbPath" placeholder="Path (e.g., Devices/device1/status)" />
@@ -50,6 +51,12 @@
       const path=document.getElementById('dbPath').value;
       const val=document.getElementById('dbValue').value;
       database.ref(path).set(val);
+    }
+    function pushWholeDb(){
+      try{
+        const json=JSON.parse(document.getElementById('output').value);
+        database.ref().set(json);
+      }catch(e){alert('Invalid JSON');}
     }
     // Call the function on load
     fetchDatabase();
