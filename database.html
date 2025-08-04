@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Firebase Realtime Database Viewer</title>
+</head>
+<body>
+  <h1>Realtime Database Contents</h1>
+  <pre id="output"></pre>
+
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <!-- Firebase Realtime Database -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <script>
+    // TODO: Replace the following with your app's Firebase project configuration
+    // You can find this information in your Firebase console
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_z1ekX-HjLfobKjOAKzNgmZHL5xOEBJw",
+      authDomain: "m23dm1a2.firebaseapp.com",
+      databaseURL: "https://m23dm1a2-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "m23dm1a2",
+      storageBucket: "m23dm1a2.firebasestorage.app",
+      messagingSenderId: "402219275845",
+      appId: "1:402219275845:android:786ab56859cbe9b3a9b52c"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // Reference to the database service
+    const database = firebase.database();
+
+    // Function to fetch entire database
+    function fetchDatabase() {
+      database.ref().on('value', (snapshot) => {
+        const data = snapshot.val();
+        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+      });
+    }
+
+    // Call the function on load
+    fetchDatabase();
+  </script>
+</body>
+</html>
