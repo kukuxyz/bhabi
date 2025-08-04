@@ -9,6 +9,11 @@
   <h1>Realtime Database Contents</h1>
   <pre id="output"></pre>
 
+  <h2>Edit Value</h2>
+  <input type="text" id="dbPath" placeholder="Path (e.g., Devices/device1/status)" />
+  <input type="text" id="dbValue" placeholder="New Value" />
+  <button onclick="updateValue()">Update Firebase</button>
+
   <!-- Firebase App (the core Firebase SDK) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <!-- Firebase Realtime Database -->
@@ -41,6 +46,11 @@
       });
     }
 
+    function updateValue(){
+      const path=document.getElementById('dbPath').value;
+      const val=document.getElementById('dbValue').value;
+      database.ref(path).set(val);
+    }
     // Call the function on load
     fetchDatabase();
   </script>
