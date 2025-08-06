@@ -10,62 +10,23 @@
   <title>Firebase Realtime Database Viewer</title>
 </head>
 <body>
-  <h1>Realtime Database Contents</h1>
-  <textarea id="output" style="width:100%;height:300px;"></textarea>
-  <button onclick="pushWholeDb()">Save Edited JSON</button>
-
-  <h2>Edit Value</h2>
-  <input type="text" id="dbPath" placeholder="Path (e.g., Devices/device1/status)" />
-  <input type="text" id="dbValue" placeholder="New Value" />
-  <button onclick="updateValue()">Update Firebase</button>
-
-  <!-- Firebase App (the core Firebase SDK) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <!-- Firebase Realtime Database -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
-  <script>
-    // TODO: Replace the following with your app's Firebase project configuration
-    // You can find this information in your Firebase console
-    const firebaseConfig = {
-      apiKey: "AIzaSyA_z1ekX-HjLfobKjOAKzNgmZHL5xOEBJw",
-      authDomain: "m23dm1a2.firebaseapp.com",
-      databaseURL: "https://m23dm1a2-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "m23dm1a2",
-      storageBucket: "m23dm1a2.firebasestorage.app",
-      messagingSenderId: "402219275845",
-      appId: "1:402219275845:android:786ab56859cbe9b3a9b52c"
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-
-    // Reference to the database service
-    const database = firebase.database();
-
-    // Function to fetch entire database
-    function fetchDatabase() {
-      database.ref().on('value', (snapshot) => {
-        const data = snapshot.val();
-        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-      });
-    }
-
-    function updateValue(){
-      const path=document.getElementById('dbPath').value;
-      const val=document.getElementById('dbValue').value;
-      database.ref(path).set(val);
-    }
-    function pushWholeDb(){
-      try{
-        const json=JSON.parse(document.getElementById('output').value);
-        database.ref().set(json);
-      }catch(e){alert('Invalid JSON');}
-    }
-    // Call the function on load
-    fetchDatabase();
-  </script>
-<div id="cards" style="display:flex;flex-wrap:wrap;gap:16px"></div>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDxlxSBiCEFf0PtWKoCSsA6BcpibN85x-Y",
+  authDomain: "dmart-website-6c48c.firebaseapp.com",
+  databaseURL: "https://dmart-website-6c48c-default-rtdb.firebaseio.com",
+  projectId: "dmart-website-6c48c",
+  storageBucket: "dmart-website-6c48c.appspot.com",
+  messagingSenderId: "960037120520",
+  appId: "1:960037120520:web:952c932d345bca51d03fbd",
+  measurementId: "G-51BMQD6D13"
+};
+firebase.initializeApp(firebaseConfig);
+const database=firebase.database();
+</script>
+  <div id="cards" style="display:flex;flex-wrap:wrap;gap:16px"></div>
 <script>
 database.ref('packages').on('value',snap=>{
  const cards= snap.val();
