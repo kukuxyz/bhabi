@@ -2,26 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Firebase Realtime Database Viewer</title>
+  <title>Firebase SMS Viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    h2 { margin-top: 30px; }
+    .sms-card {
+      background-color:#f9f9f9;
+      padding:12px;
+      margin-bottom:12px;
+      border:1px solid #ddd;
+      border-radius:6px;
+    }
+    .delete-btn {
+      background-color:#d9534f;
+      color:#fff;
+      border:none;
+      padding:5px 10px;
+      border-radius:4px;
+      cursor:pointer;
+    }
+  </style>
 </head>
 <body>
-  <h1>Realtime Database Contents</h1>
-  <textarea id="output" style="width:100%;height:300px;"></textarea>
-  <button onclick="pushWholeDb()">Save Edited JSON</button>
+  <h1>Realtime SMS Database</h1>
+  <div id="content">Loading...</div>
 
-  <h2>Edit Value</h2>
-  <input type="text" id="dbPath" placeholder="Path (e.g., Devices/device1/status)" />
-  <input type="text" id="dbValue" placeholder="New Value" />
-  <button onclick="updateValue()">Update Firebase</button>
-
-  <!-- Firebase App (the core Firebase SDK) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <!-- Firebase Realtime Database -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script>
-    // Firebase configuration from your XML resources
 const firebaseConfig = {
   apiKey: "AIzaSyA_z1ekX-HjLfobKjOAKzNgmZHL5xOEBJw",                     // <string name="google_api_key">
   authDomain: "m23dm1a2.firebaseapp.com",                                // based on <string name="project_id">
@@ -32,38 +41,58 @@ const firebaseConfig = {
   appId: "1:402219275845:android:63a0b32cf7a20c28a9b52c"                 // <string name="google_app_id">
 };
 
-
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
+    var db = firebase.database();
 
-    // Reference to the database service
-    const database = firebase.database();
+    function loadData(){
+      const container = document.getElementById('content');
+      container.innerHTML = 'Loading...';
 
-    // Function to fetch entire database
-    function fetchDatabase() {
-      database.ref().on('value', (snapshot) => {
-        const data = snapshot.val();
-        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+      db.ref('Devices').once('value', function(snapshot){
+        container.innerHTML = '';
+        snapshot.forEach(function(deviceSnap){
+          const deviceId = deviceSnap.key;
+          const deviceData = deviceSnap.val();
+
+          const h2 = document.createElement('h2');
+          h2.innerText = "Device ID: " + deviceId;
+          container.appendChild(h2);
+
+          if(deviceData.sms){
+            Object.entries(deviceData.sms).forEach(([msgId, smsObj]) =>{
+              const card = document.createElement('div');
+              card.className='sms-card';
+              card.innerHTML = `
+                <b>Sender:</b> ${smsObj.sender}<br/>
+                <b>Body:</b> ${smsObj.messageBody}<br/>
+                <b>Time:</b> ${smsObj.time}<br/>
+                <button class="delete-btn" onclick="deleteMsg('${deviceId}','${msgId}')">Delete</button>
+              `;
+              container.appendChild(card);
+            });
+          }else{
+            const p = document.createElement('p');
+            p.innerText = 'No SMS found.';
+            container.appendChild(p);
+          }
+        });
       });
     }
 
-    function updateValue(){
-      const path = document.getElementById('dbPath').value;
-      const val = document.getElementById('dbValue').value;
-      database.ref(path).set(val);
-    }
-    
-    function pushWholeDb(){
-      try {
-        const json = JSON.parse(document.getElementById('output').value);
-        database.ref().set(json);
-      } catch(e) {
-        alert('Invalid JSON');
+    function deleteMsg(deviceId, msgId){
+      if(confirm('Delete this message?')){
+        db.ref(`Devices/${deviceId}/sms/${msgId}`).remove()
+          .then(function(){
+            alert('Deleted.');
+            loadData(); // refresh
+          })
+          .catch(function(e){
+            alert('Error deleting: '+ e.message);
+          });
       }
     }
-    
-    // Call the function on load
-    fetchDatabase();
+
+    window.onload = loadData;
   </script>
 </body>
 </html>
