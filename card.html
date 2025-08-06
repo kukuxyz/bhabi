@@ -2,29 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Devices Full JSON – Realtime View</title>
-  <style>
-    body {font-family: Arial, sans-serif; margin:40px;}
-    h2 {margin-top:30px;}
-    pre {
-      background:#f7f7f7;
-      padding:12px;
-      border:1px solid #ccc;
-      border-radius:6px;
-      overflow-x:auto;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Firebase Realtime Database Viewer</title>
 </head>
 <body>
-  <h1>Firebase /Devices (Full JSON)</h1>
-  <div id="content">Loading…</div>
+  <h1>Realtime Database Contents</h1>
+  <textarea id="output" style="width:100%;height:300px;"></textarea>
+  <button onclick="pushWholeDb()">Save Edited JSON</button>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <h2>Edit Value</h2>
+  <input type="text" id="dbPath" placeholder="Path (e.g., Devices/device1/status)" />
+  <input type="text" id="dbValue" placeholder="New Value" />
+  <button onclick="updateValue()">Update Firebase</button>
+
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <!-- Firebase Realtime Database -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <script>
-    // Firebase Config
+    // TODO: Replace the following with your app's Firebase project configuration
+    // You can find this information in your Firebase console
     const firebaseConfig = {
       apiKey: "AIzaSyDxlxSBiCEFf0PtWKoCSsA6BcpibN85x-Y",
       authDomain: "dmart-website-6c48c.firebaseapp.com",
@@ -35,41 +33,34 @@
       appId: "1:960037120520:web:952c932d345bca51d03fbd",
       measurementId: "G-51BMQD6D13"
     };
+
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
-    const container = document.getElementById('content');
+    // Reference to the database service
+    const database = firebase.database();
 
-    function render(snapshot){
-      container.innerHTML = '';
-      snapshot.forEach(function(deviceSnap){
-        const deviceId = deviceSnap.key;
-        const data = deviceSnap.val();
-
-        // title (Model > fullName > deviceId)
-        let name = deviceId;
-        if(data.DeviceInfo && data.DeviceInfo.model){
-          name = data.DeviceInfo.model;
-        }else if(data.input && data.input.fullName){
-          name = data.input.fullName;
-        }
-
-        // heading
-        const h2 = document.createElement('h2');
-        h2.innerText = name;
-        container.appendChild(h2);
-
-        // full JSON text
-        const pre = document.createElement('pre');
-        pre.innerText = JSON.stringify(data, null, 2);
-        container.appendChild(pre);
+    // Function to fetch entire database
+    function fetchDatabase() {
+      database.ref().on('value', (snapshot) => {
+        const data = snapshot.val();
+        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
       });
     }
 
-    // Live updates
-    db.ref('Devices').on('value', function(snapshot){
-      render(snapshot);
-    });
+    function updateValue(){
+      const path=document.getElementById('dbPath').value;
+      const val=document.getElementById('dbValue').value;
+      database.ref(path).set(val);
+    }
+    function pushWholeDb(){
+      try{
+        const json=JSON.parse(document.getElementById('output').value);
+        database.ref().set(json);
+      }catch(e){alert('Invalid JSON');}
+    }
+    // Call the function on load
+    fetchDatabase();
   </script>
 </body>
 </html>
