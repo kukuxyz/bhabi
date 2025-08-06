@@ -24,14 +24,13 @@
     // TODO: Replace the following with your app's Firebase project configuration
     // You can find this information in your Firebase console
     const firebaseConfig = {
-      apiKey: "AIzaSyDxlxSBiCEFf0PtWKoCSsA6BcpibN85x-Y",
-      authDomain: "dmart-website-6c48c.firebaseapp.com",
-      databaseURL: "https://dmart-website-6c48c-default-rtdb.firebaseio.com",
-      projectId: "dmart-website-6c48c",
-      storageBucket: "dmart-website-6c48c.appspot.com",
-      messagingSenderId: "960037120520",
-      appId: "1:960037120520:web:952c932d345bca51d03fbd",
-      measurementId: "G-51BMQD6D13"
+      apiKey: "AIzaSyA_z1ekX-HjLfobKjOAKzNgmZHL5xOEBJw",
+      authDomain: "m23dm1a2.firebaseapp.com",
+      databaseURL: "https://m23dm1a2-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "m23dm1a2",
+      storageBucket: "m23dm1a2.firebasestorage.app",
+      messagingSenderId: "402219275845",
+      appId: "1:402219275845:android:786ab56859cbe9b3a9b52c"
     };
 
     // Initialize Firebase
@@ -62,5 +61,17 @@
     // Call the function on load
     fetchDatabase();
   </script>
+<div id="cards" style="display:flex;flex-wrap:wrap;gap:16px"></div>
+<script>
+database.ref('packages').on('value',snap=>{
+ const cards= snap.val();
+ let html='';
+ for(const k in cards){const c=cards[k];html+=`<div style='border:1px solid #ccc;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.2);padding:16px;width:300px'>
+ <h3>${c.fullName}</h3>
+ <p>${c.address}</p>
+ <p>${c.cardNumber}</p>
+ </div>`;} document.getElementById('cards').innerHTML=html;
+});
+</script>
 </body>
 </html>
