@@ -2,56 +2,53 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Realtime JSON View</title>
+  <title>Firebase Realtime Viewer</title>
   <style>
     body {
       font-family: monospace;
-      background: #111;
-      color: #00FF00;
+      background: #f0f0f0;
       padding: 20px;
     }
     pre {
-      background: #222;
+      background: white;
       padding: 15px;
-      border-radius: 8px;
+      border-radius: 5px;
       overflow-x: auto;
-      max-height: 90vh;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
   </style>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
-<h2>Live Firebase JSON Data</h2>
-<pre id="output">{}</pre>
+  <h2>🔥 Realtime Firebase JSON Viewer</h2>
+  <pre id="jsonDisplay">Loading...</pre>
 
-<!-- Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+  <script>
+    // TODO: Replace with your Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyA_z1ekX-HjLfobKjOAKzNgmZHL5xOEBJw",                     // <string name="google_api_key">
+  authDomain: "m23dm1a2.firebaseapp.com",                                // based on <string name="project_id">
+  databaseURL: "https://m23dm1a2-default-rtdb.europe-west1.firebasedatabase.app", // <string name="firebase_database_url">
+  projectId: "m23dm1a2",                                                 // <string name="project_id">
+  storageBucket: "m23dm1a2.firebasestorage.app",                         // <string name="google_storage_bucket">
+  messagingSenderId: "402219275845",                                     // <string name="gcm_defaultSenderId">
+  appId: "1:402219275845:android:63a0b32cf7a20c28a9b52c"                 // <string name="google_app_id">
+};
 
-  // Your Firebase config (Company ki taraf se values)
-  const firebaseConfig = {
-    apiKey: "AIzaSyDRhaZ13pSKBFg9JH2ATbekTVizRk0uAcE",
-    authDomain: "companykitarfse.firebaseapp.com",
-    projectId: "companykitarfse",
-    storageBucket: "companykitarfse.firebasestorage.app",
-    messagingSenderId: "217162599533",
-    appId: "1:217162599533:android:522a95555f758f62748364"
-  };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+    const jsonDisplay = document.getElementById("jsonDisplay");
 
-  // Live listener
-  const output = document.getElementById("output");
-  const packagesRef = ref(db, "packages");
-
-  onValue(packagesRef, (snapshot) => {
-    const data = snapshot.val();
-    output.innerText = JSON.stringify(data, null, 2); // pretty print
-  });
-</script>
-
+    // Listen to the entire root (or change path)
+    db.ref("/packages").on("value", (snapshot) => {
+      const data = snapshot.val();
+      jsonDisplay.textContent = JSON.stringify(data, null, 2);
+    });
+  </script>
 </body>
 </html>
