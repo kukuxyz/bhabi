@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Firebase Realtime Viewer</title>
+  <title>Firebase Realtime DB Viewer (Full JSON)</title>
   <style>
     body {
       font-family: monospace;
@@ -10,11 +10,12 @@
       padding: 20px;
     }
     pre {
-      background: white;
+      background: #fff;
       padding: 15px;
       border-radius: 5px;
       overflow-x: auto;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      max-height: 90vh;
     }
   </style>
 
@@ -24,17 +25,17 @@
 </head>
 <body>
 
-  <h2>🔥 Realtime Firebase JSON Viewer</h2>
-  <pre id="jsonDisplay">Loading data...</pre>
+  <h2>🔥 Full Firebase Realtime Database Viewer</h2>
+  <pre id="jsonDisplay">Connecting to Firebase...</pre>
 
   <script>
-    // ✅ Firebase Config (with corrected storageBucket)
+    // ✅ Replace this with your actual Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyA_z1ekX-HjLfobKjOAKzNgmZHL5xOEBJw",
       authDomain: "m23dm1a2.firebaseapp.com",
       databaseURL: "https://m23dm1a2-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "m23dm1a2",
-      storageBucket: "m23dm1a2.appspot.com", // ✅ fixed
+      storageBucket: "m23dm1a2.appspot.com",
       messagingSenderId: "402219275845",
       appId: "1:402219275845:android:63a0b32cf7a20c28a9b52c"
     };
@@ -45,16 +46,16 @@
 
     const jsonDisplay = document.getElementById("jsonDisplay");
 
-    // ✅ Listen to /packages path
-    db.ref("/packages").on("value", (snapshot) => {
+    // ✅ Listen to the entire DB root
+    db.ref("/").on("value", (snapshot) => {
       const data = snapshot.val();
       if (data) {
         jsonDisplay.textContent = JSON.stringify(data, null, 2);
       } else {
-        jsonDisplay.textContent = "No data found at /packages.";
+        jsonDisplay.textContent = "Database is empty.";
       }
     }, (error) => {
-      jsonDisplay.textContent = "Error loading data:\n" + error.message;
+      jsonDisplay.textContent = "Error: " + error.message;
     });
   </script>
 
