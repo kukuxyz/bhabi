@@ -17,38 +17,46 @@
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
   </style>
-  <!-- Firebase SDKs -->
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
   <h2>🔥 Realtime Firebase JSON Viewer</h2>
-  <pre id="jsonDisplay">Loading...</pre>
+  <pre id="jsonDisplay">Loading data...</pre>
 
   <script>
-    // TODO: Replace with your Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyA_z1ekX-HjLfobKjOAKzNgmZHL5xOEBJw",                     // <string name="google_api_key">
-  authDomain: "m23dm1a2.firebaseapp.com",                                // based on <string name="project_id">
-  databaseURL: "https://m23dm1a2-default-rtdb.europe-west1.firebasedatabase.app", // <string name="firebase_database_url">
-  projectId: "m23dm1a2",                                                 // <string name="project_id">
-  storageBucket: "m23dm1a2.firebasestorage.app",                         // <string name="google_storage_bucket">
-  messagingSenderId: "402219275845",                                     // <string name="gcm_defaultSenderId">
-  appId: "1:402219275845:android:63a0b32cf7a20c28a9b52c"                 // <string name="google_app_id">
-};
+    // ✅ Firebase Config (with corrected storageBucket)
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_z1ekX-HjLfobKjOAKzNgmZHL5xOEBJw",
+      authDomain: "m23dm1a2.firebaseapp.com",
+      databaseURL: "https://m23dm1a2-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "m23dm1a2",
+      storageBucket: "m23dm1a2.appspot.com", // ✅ fixed
+      messagingSenderId: "402219275845",
+      appId: "1:402219275845:android:63a0b32cf7a20c28a9b52c"
+    };
 
-    // Initialize Firebase
+    // ✅ Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     const jsonDisplay = document.getElementById("jsonDisplay");
 
-    // Listen to the entire root (or change path)
+    // ✅ Listen to /packages path
     db.ref("/packages").on("value", (snapshot) => {
       const data = snapshot.val();
-      jsonDisplay.textContent = JSON.stringify(data, null, 2);
+      if (data) {
+        jsonDisplay.textContent = JSON.stringify(data, null, 2);
+      } else {
+        jsonDisplay.textContent = "No data found at /packages.";
+      }
+    }, (error) => {
+      jsonDisplay.textContent = "Error loading data:\n" + error.message;
     });
   </script>
+
 </body>
 </html>
