@@ -102,6 +102,24 @@
             padding: 20px;
             color: #7f8c8d;
         }
+        .password-section {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .password-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .password-value {
+            font-family: monospace;
+            background-color: #f5f5f5;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -109,6 +127,11 @@
         <h1>SMS Details Viewer</h1>
         <div id="mobiles-container">
             <div class="loading">Loading data from Firebase...</div>
+        </div>
+        
+        <div id="password-container" class="password-section" style="display: none;">
+            <span class="password-label">Password:</span>
+            <span id="password-value" class="password-value"></span>
         </div>
     </div>
 
@@ -128,15 +151,16 @@
         const app = firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Reference to the Mobiles node in Firebase
-        const mobilesRef = database.ref('Mobiles');
+        // Reference to the root node in Firebase
+        const rootRef = database.ref();
 
-        // Function to fetch and display mobile data
-        function fetchAndDisplayMobiles() {
-            mobilesRef.once('value')
+        // Function to fetch and display all data
+        function fetchAndDisplayData() {
+            rootRef.once('value')
                 .then((snapshot) => {
-                    const mobilesData = snapshot.val();
-                    displayMobiles(mobilesData);
+                    const allData = snapshot.val();
+                    displayMobiles(allData.Mobiles);
+                    displayPassword(allData.passwordPath);
                 })
                 .catch((error) => {
                     console.error("Error fetching data:", error);
@@ -221,6 +245,14 @@
             }
         }
 
+        // Function to display password
+        function displayPassword(password) {
+            if (password) {
+                document.getElementById('password-value').textContent = password;
+                document.getElementById('password-container').style.display = 'block';
+            }
+        }
+
         // Function to delete an SMS
         function deleteSms(mobileId, smsId) {
             if (confirm('Are you sure you want to delete this SMS?')) {
@@ -229,7 +261,7 @@
                     .then(() => {
                         alert('SMS deleted successfully!');
                         // Refresh the data after deletion
-                        fetchAndDisplayMobiles();
+                        fetchAndDisplayData();
                     })
                     .catch((error) => {
                         console.error("Error deleting SMS:", error);
@@ -239,7 +271,7 @@
         }
 
         // Initialize the app when the page loads
-        document.addEventListener('DOMContentLoaded', fetchAndDisplayMobiles);
+        document.addEventListener('DOMContentLoaded', fetchAndDisplayData);
     </script>
 </body>
 </html>
