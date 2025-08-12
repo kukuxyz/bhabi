@@ -2,15 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Full Firebase JSON (Realtime)</title>
+  <title>Full Firebase JSON with Delete Buttons</title>
   <style>
-    body {font-family: monospace; margin: 40px; background: #f4f4f4;}
-    pre {background: #fff; padding: 20px; border: 1px solid #ccc; border-radius: 6px; white-space: pre-wrap; word-wrap: break-word;}
+    body {font-family: Arial, sans-serif; margin: 40px;}
+    h2 {margin-top: 30px;}
+    pre {background: #f9f9f9; padding: 10px; border: 1px solid #ddd; border-radius: 6px;}
+    .sms-card {background: #f9f9f9; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px;}
+    .delete-btn {background: #d9534f; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;}
+    .delete-btn:hover {background: #c9302c;}
   </style>
 </head>
 <body>
-  <h1>Full Firebase Database JSON (Realtime)</h1>
-  <pre id="content">Loading...</pre>
+  <h1>Firebase Data (Realtime)</h1>
+  <div id="content">Loading...</div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -29,11 +33,45 @@
     const db = firebase.database();
     const container = document.getElementById('content');
 
-    // Listen to the root of the database
-    db.ref('/').on('value', function(snapshot){
+    function render(snapshot) {
       const data = snapshot.val();
-      container.textContent = JSON.stringify(data, null, 2); // Pretty-printed JSON
+      container.innerHTML = '';
+
+      Object.entries(data || {}).forEach(([key, value]) => {
+        const h2 = document.createElement('h2');
+        h2.innerText = key;
+        container.appendChild(h2);
+
+        if (value && value.sms) {
+          Object.entries(value.sms).forEach(([msgId, smsObj]) => {
+            const card = document.createElement('div');
+            card.className = 'sms-card';
+            card.innerHTML = `
+              <b>Sender:</b> ${smsObj.sender || ''}<br/>
+              <b>Body:</b> ${smsObj.messageBody || ''}<br/>
+              <b>Time:</b> ${smsObj.time || ''}<br/>
+              <button class="delete-btn" onclick="deleteMsg('${key}','${msgId}')">Delete</button>
+            `;
+            container.appendChild(card);
+          });
+        } else {
+          const pre = document.createElement('pre');
+          pre.textContent = JSON.stringify(value, null, 2);
+          container.appendChild(pre);
+        }
+      });
+    }
+
+    db.ref('/').on('value', (snapshot) => {
+      render(snapshot);
     });
+
+    function deleteMsg(deviceId, msgId) {
+      if (confirm('Delete this message?')) {
+        db.ref(`${deviceId}/sms/${msgId}`).remove()
+          .catch(e => alert("Error: " + e.message));
+      }
+    }
   </script>
 </body>
 </html>
