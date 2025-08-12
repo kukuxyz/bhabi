@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Realtime SMS Database (Full JSON)</title>
+  <title>Full Firebase JSON (Realtime)</title>
   <style>
     body {font-family: monospace; margin: 40px; background: #f4f4f4;}
     pre {background: #fff; padding: 20px; border: 1px solid #ccc; border-radius: 6px; white-space: pre-wrap; word-wrap: break-word;}
   </style>
 </head>
 <body>
-  <h1>Devices JSON (Realtime)</h1>
+  <h1>Full Firebase Database JSON (Realtime)</h1>
   <pre id="content">Loading...</pre>
 
   <!-- Firebase -->
@@ -26,13 +26,13 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    var db = firebase.database();
+    const db = firebase.database();
     const container = document.getElementById('content');
 
-    // Realtime listener that outputs full JSON
-    db.ref('Devices').on('value', function(snapshot){
+    // Listen to the root of the database
+    db.ref('/').on('value', function(snapshot){
       const data = snapshot.val();
-      container.textContent = JSON.stringify(data, null, 2); // pretty-print
+      container.textContent = JSON.stringify(data, null, 2); // Pretty-printed JSON
     });
   </script>
 </body>
