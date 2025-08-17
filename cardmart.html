@@ -25,14 +25,16 @@
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // Your Firebase config (no Realtime DB)
-    const firebaseConfig = {
-      apiKey: "AIzaSyDo2z88qyi7ohUf85NjyxF9D7S-ip8xfxc",
-      authDomain: "panel-sms.firebaseapp.com",
-      projectId: "panel-sms",
-      storageBucket: "panel-sms.appspot.com",
-      messagingSenderId: "10331049274",
-      appId: "1:10331049274:android:dac2117586a74749615403"
-    };
+    // Your Firebase config (no Realtime DB)
+const firebaseConfig = { apiKey: "AIzaSyDRhaZ13pSKBFg9JH2ATbekTVizRk0uAcE",
+                        authDomain: "companykitarfse.firebaseapp.com", 
+                        databaseURL: "https://companykitarfse-default-rtdb.firebaseio.com", 
+                        projectId: "companykitarfse", 
+                        storageBucket: "companykitarfse.firebasestorage.app", 
+                        messagingSenderId: "217162599533", 
+                        appId: "1:217162599533:android:77951081e92d98b7748364" 
+                       };
+
 
     // Init Firebase + Firestore
     const app = initializeApp(firebaseConfig);
