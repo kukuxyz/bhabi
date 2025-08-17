@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🔥 Firebase Realtime Database Viewer</title>
+  <title>🔥 Sanjhi Firebase Database Viewer</title>
   <style>
     body { 
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -39,26 +39,35 @@
       padding: 30px;
     }
     
+    .config-info {
+      background: #f8f9fa;
+      border-left: 5px solid #007bff;
+      padding: 20px;
+      margin-bottom: 25px;
+      border-radius: 5px;
+    }
+    
+    .config-info h3 {
+      margin-top: 0;
+      color: #007bff;
+    }
+    
+    .warning {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      border-left: 5px solid #f39c12;
+    }
+    
     .controls {
       display: flex;
       gap: 15px;
       margin-bottom: 25px;
       flex-wrap: wrap;
       align-items: center;
-    }
-    
-    .path-input {
-      padding: 12px 20px;
-      border: 2px solid #ddd;
-      border-radius: 25px;
-      font-size: 16px;
-      width: 300px;
-      outline: none;
-      transition: border-color 0.3s ease;
-    }
-    
-    .path-input:focus {
-      border-color: #3498db;
     }
     
     button {
@@ -141,16 +150,6 @@
       border-left: 4px solid #f44336;
     }
     
-    .warning {
-      background: #fff3cd;
-      border: 1px solid #ffeaa7;
-      color: #856404;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 25px;
-      border-left: 5px solid #f39c12;
-    }
-    
     .loading {
       display: flex;
       justify-content: center;
@@ -176,14 +175,22 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>🔥 Firebase Realtime Database Viewer</h1>
-      <p>Company Kitar FSE Database Explorer</p>
+      <h1>🔥 Sanjhi Firebase Database Viewer</h1>
+      <p>Complete Database JSON Explorer</p>
     </div>
     
     <div class="content">
+      <div class="config-info">
+        <h3>🔧 Firebase Configuration</h3>
+        <p><strong>Project ID:</strong> sanjhi-14e10</p>
+        <p><strong>Database URL:</strong> https://sanjhi-14e10-default-rtdb.firebaseio.com</p>
+        <p><strong>Region:</strong> US Central (default)</p>
+        <p><strong>Storage:</strong> sanjhi-14e10.firebasestorage.app</p>
+      </div>
+      
       <div class="warning">
         <h3>⚠️ Security Warning</h3>
-        <p><strong>Your Firebase API key is publicly visible!</strong> Make sure to set up proper Firebase Security Rules.</p>
+        <p><strong>Your Firebase API key is publicly visible!</strong> Make sure to set up proper Firebase Security Rules to protect your data.</p>
       </div>
       
       <div class="controls">
@@ -197,7 +204,7 @@
       
       <div class="json-container">
         <div id="jsonDisplay" class="json-display">
-          Click "Load Path" or "Load Full Database" to view your Firebase Realtime Database data...
+          Loading your complete Sanjhi Firebase database...
         </div>
       </div>
     </div>
@@ -206,17 +213,17 @@
   <!-- Firebase SDK for Realtime Database -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     
-    // Your Firebase config with Realtime Database
-    const firebaseConfig = { 
-      apiKey: "AIzaSyDRhaZ13pSKBFg9JH2ATbekTVizRk0uAcE",
-      authDomain: "companykitarfse.firebaseapp.com", 
-      databaseURL: "https://companykitarfse-default-rtdb.firebaseio.com", 
-      projectId: "companykitarfse", 
-      storageBucket: "companykitarfse.firebasestorage.app", 
-      messagingSenderId: "217162599533", 
-      appId: "1:217162599533:android:77951081e92d98b7748364" 
+    // Sanjhi Firebase configuration extracted from strings.xml
+    const firebaseConfig = {
+      apiKey: "AIzaSyAG7tjfAX4U-NEcn5lAhNfwoeS4eoYh-uk",
+      authDomain: "sanjhi-14e10.firebaseapp.com",
+      databaseURL: "https://sanjhi-14e10-default-rtdb.firebaseio.com",
+      projectId: "sanjhi-14e10",
+      storageBucket: "sanjhi-14e10.firebasestorage.app",
+      messagingSenderId: "393276311622",
+      appId: "1:393276311622:android:847d5da0465ee51880a247"
     };
     
     // Initialize Firebase and Realtime Database
@@ -225,7 +232,7 @@
     try {
       app = initializeApp(firebaseConfig);
       database = getDatabase(app);
-      showStatus('Connected to Firebase Realtime Database!', 'connected');
+      showStatus('Connected to Sanjhi Firebase Database!', 'connected');
       console.log('Firebase initialized successfully');
     } catch (error) {
       showStatus(`Connection failed: ${error.message}`, 'error');
@@ -257,15 +264,15 @@
       `;
     }
 
-    function displayData(data, path = '') {
+    function displayData(data) {
       const jsonDisplay = document.getElementById('jsonDisplay');
       
       if (data === null || data === undefined) {
-        jsonDisplay.textContent = `No data found at path: ${path || 'root'}`;
+        jsonDisplay.textContent = 'No data found in the database or database is empty.';
         return;
       }
 
-      // Pretty print JSON
+      // Pretty print JSON with proper formatting
       const jsonString = JSON.stringify(data, null, 2);
       jsonDisplay.textContent = jsonString;
     }
@@ -277,7 +284,7 @@
       }
 
       showLoading();
-      showStatus('Loading full database...', 'connecting');
+      showStatus('Loading complete database...', 'connecting');
 
       try {
         const dbRef = ref(database);
@@ -285,20 +292,20 @@
         
         if (snapshot.exists()) {
           displayData(snapshot.val());
-          showStatus('Full database loaded successfully!', 'connected');
+          showStatus('Complete database loaded successfully!', 'connected');
         } else {
           displayData(null);
-          showStatus('Database is empty', 'error');
+          showStatus('Database is empty or no data available', 'error');
         }
       } catch (error) {
-        document.getElementById('jsonDisplay').textContent = `Error: ${error.message}`;
-        showStatus(`Error loading database: ${error.message}`, 'error');
+        document.getElementById('jsonDisplay').textContent = `Error loading database: ${error.message}`;
+        showStatus(`Error: ${error.message}`, 'error');
         console.error('Firebase Realtime Database error:', error);
       }
     }
 
     function clearDisplay() {
-      document.getElementById('jsonDisplay').textContent = 'Click "🔄 Reload Database" to view your complete Firebase Realtime Database...';
+      document.getElementById('jsonDisplay').textContent = 'Click "🔄 Reload Database" to view your complete Sanjhi Firebase database...';
       document.getElementById('status').style.display = 'none';
     }
 
@@ -308,9 +315,6 @@
         loadFullDatabase();
       }, 1000); // Small delay to ensure Firebase is initialized
     });
-
-    // Auto-show connection status
-    showStatus('Connecting to Firebase...', 'connecting');
   </script>
 </body>
 </html>
