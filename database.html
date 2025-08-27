@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Database Viewer</title>
+    <title>Device Messages Manager</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <style>
@@ -11,7 +11,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f8f9fa;
+            background-color: #f5f7fa;
             color: #333;
         }
         .container {
@@ -29,69 +29,169 @@
             font-size: 2.5em;
             font-weight: 300;
         }
-        .database-tree {
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.6;
+        .stats-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
         }
-        .tree-node {
-            margin-left: 20px;
-            position: relative;
+        .stat-item {
+            flex: 1;
         }
-        .tree-key {
+        .stat-number {
+            font-size: 2em;
             font-weight: bold;
-            color: #8e44ad;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        .device-card {
+            background-color: #ffffff;
+            border: 2px solid #e3e8ee;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .device-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.12);
+        }
+        .device-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
             cursor: pointer;
             user-select: none;
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .tree-key:hover {
-            background-color: #f0f0f0;
+        .device-header:hover {
+            background: linear-gradient(135deg, #3e9bfe 0%, #00e0fe 100%);
         }
-        .tree-key::before {
-            content: '▼ ';
-            color: #7f8c8d;
-            font-size: 12px;
-            transition: transform 0.2s;
+        .device-info {
+            display: flex;
+            flex-direction: column;
         }
-        .tree-key.collapsed::before {
-            content: '▶ ';
-            transform: rotate(0deg);
+        .device-name {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 5px;
         }
-        .tree-value {
-            color: #27ae60;
-            margin-left: 10px;
+        .device-details {
+            font-size: 0.9em;
+            opacity: 0.9;
         }
-        .tree-value.string {
-            color: #e67e22;
+        .device-stats {
+            text-align: right;
         }
-        .tree-value.number {
-            color: #3498db;
+        .message-count {
+            font-size: 2em;
+            font-weight: bold;
         }
-        .tree-value.boolean {
-            color: #9b59b6;
+        .expand-icon {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+            margin-left: 15px;
         }
-        .tree-value.null {
-            color: #95a5a6;
-            font-style: italic;
+        .device-header.collapsed .expand-icon {
+            transform: rotate(-90deg);
         }
-        .tree-children {
-            margin-top: 5px;
-            border-left: 2px solid #ecf0f1;
-            padding-left: 15px;
+        .messages-container {
+            padding: 0;
+            max-height: 600px;
+            overflow-y: auto;
             transition: all 0.3s ease;
         }
-        .tree-children.collapsed {
-            display: none;
+        .messages-container.collapsed {
+            max-height: 0;
+            padding: 0;
+        }
+        .message-card {
+            border-bottom: 1px solid #f0f2f5;
+            padding: 20px;
+            position: relative;
+            transition: background-color 0.2s ease;
+        }
+        .message-card:hover {
+            background-color: #f8f9fa;
+        }
+        .message-card:last-child {
+            border-bottom: none;
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .message-meta {
+            display: flex;
+            flex-direction: column;
+        }
+        .sender {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+            margin-bottom: 3px;
+        }
+        .timestamp {
+            color: #7f8c8d;
+            font-size: 0.85em;
+        }
+        .message-body {
+            color: #34495e;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            margin-bottom: 15px;
+            background-color: #f8f9fc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+        }
+        .delete-btn:hover {
+            background: linear-gradient(135deg, #ff5252 0%, #d32f2f 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+        .delete-btn:active {
+            transform: translateY(0);
+        }
+        .no-messages {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 40px;
+            background-color: #f8f9fa;
         }
         .loading {
             text-align: center;
             padding: 50px;
             color: #7f8c8d;
-            font-size: 18px;
+            font-size: 1.2em;
         }
         .error {
             color: #e74c3c;
@@ -101,88 +201,70 @@
             border-left: 4px solid #e74c3c;
             margin: 20px 0;
         }
-        .stats {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            border-left: 4px solid #3498db;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        .stat-item {
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        .stat-label {
-            color: #7f8c8d;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
         .controls {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             text-align: center;
         }
         .btn {
-            background-color: #3498db;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 12px 25px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 500;
             margin: 0 10px;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
         }
         .btn:hover {
-            background-color: #2980b9;
-        }
-        .btn.secondary {
-            background-color: #95a5a6;
-        }
-        .btn.secondary:hover {
-            background-color: #7f8c8d;
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
         .search-box {
-            padding: 10px;
-            border: 2px solid #ecf0f1;
-            border-radius: 6px;
+            padding: 12px;
+            border: 2px solid #e3e8ee;
+            border-radius: 8px;
             font-size: 14px;
             width: 300px;
             margin: 0 10px;
+            transition: border-color 0.2s ease;
         }
         .search-box:focus {
             outline: none;
-            border-color: #3498db;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         .highlight {
             background-color: #fff3cd;
-            padding: 1px 3px;
+            padding: 2px 4px;
             border-radius: 3px;
+            font-weight: bold;
+        }
+        .message-id {
+            font-family: monospace;
+            font-size: 0.75em;
+            color: #95a5a6;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Firebase Database Viewer</h1>
+        <h1>Device Messages Manager</h1>
         
         <div class="controls">
-            <input type="text" id="search-box" class="search-box" placeholder="Search in database...">
-            <button class="btn" onclick="refreshData()">Refresh</button>
-            <button class="btn secondary" onclick="expandAll()">Expand All</button>
-            <button class="btn secondary" onclick="collapseAll()">Collapse All</button>
+            <input type="text" id="search-box" class="search-box" placeholder="Search messages...">
+            <button class="btn" onclick="refreshData()">🔄 Refresh</button>
+            <button class="btn" onclick="expandAll()">📂 Expand All</button>
+            <button class="btn" onclick="collapseAll()">📁 Collapse All</button>
         </div>
 
         <div id="stats-container"></div>
-        <div id="database-container">
-            <div class="loading">Loading database from Firebase...</div>
+        <div id="devices-container">
+            <div class="loading">Loading devices and messages from Firebase...</div>
         </div>
     </div>
 
@@ -203,76 +285,8 @@
         const database = firebase.database();
         const rootRef = database.ref();
 
-        let fullData = null;
+        let allDevicesData = {};
         let searchTerm = '';
-
-        // Function to count database statistics
-        function calculateStats(data) {
-            let totalNodes = 0;
-            let totalValues = 0;
-            let dataTypes = { string: 0, number: 0, boolean: 0, null: 0, object: 0, array: 0 };
-
-            function traverse(obj) {
-                if (obj === null) {
-                    totalValues++;
-                    dataTypes.null++;
-                    return;
-                }
-                
-                if (Array.isArray(obj)) {
-                    totalNodes++;
-                    dataTypes.array++;
-                    obj.forEach(traverse);
-                } else if (typeof obj === 'object') {
-                    totalNodes++;
-                    dataTypes.object++;
-                    Object.values(obj).forEach(traverse);
-                } else {
-                    totalValues++;
-                    dataTypes[typeof obj]++;
-                }
-            }
-
-            traverse(data);
-            return { totalNodes, totalValues, dataTypes };
-        }
-
-        // Function to display database statistics
-        function displayStats(data) {
-            const stats = calculateStats(data);
-            const statsContainer = document.getElementById('stats-container');
-            
-            statsContainer.innerHTML = `
-                <div class="stats">
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-number">${stats.totalNodes}</div>
-                            <div class="stat-label">Total Objects/Arrays</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number">${stats.totalValues}</div>
-                            <div class="stat-label">Total Values</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number">${stats.dataTypes.string}</div>
-                            <div class="stat-label">Strings</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number">${stats.dataTypes.number}</div>
-                            <div class="stat-label">Numbers</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number">${stats.dataTypes.boolean}</div>
-                            <div class="stat-label">Booleans</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number">${Object.keys(data || {}).length}</div>
-                            <div class="stat-label">Root Keys</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
 
         // Function to highlight search terms
         function highlightText(text, search) {
@@ -281,133 +295,219 @@
             return text.replace(regex, '<span class="highlight">$1</span>');
         }
 
-        // Function to check if a node matches search criteria
-        function matchesSearch(key, value, search) {
+        // Function to check if message matches search
+        function messageMatchesSearch(messageData, search) {
             if (!search) return true;
-            
             const searchLower = search.toLowerCase();
-            const keyMatch = key.toLowerCase().includes(searchLower);
             
-            if (keyMatch) return true;
+            const messageBody = (messageData.messageBody || '').toLowerCase();
+            const sender = (messageData.sender || '').toLowerCase();
             
-            if (typeof value === 'string') {
-                return value.toLowerCase().includes(searchLower);
-            }
-            
-            return false;
+            return messageBody.includes(searchLower) || sender.includes(searchLower);
         }
 
-        // Function to render a tree node
-        function renderTreeNode(key, value, path = '') {
-            const currentPath = path ? `${path}.${key}` : key;
-            const nodeId = `node-${currentPath.replace(/\./g, '-')}`;
+        // Function to format timestamp
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'Unknown time';
             
-            if (value === null) {
-                const matches = matchesSearch(key, value, searchTerm);
-                if (!matches && searchTerm) return '';
-                
-                return `
-                    <div class="tree-node">
-                        <span class="tree-key" style="cursor: default;">${highlightText(key, searchTerm)}</span>
-                        <span class="tree-value null">null</span>
-                    </div>
-                `;
+            // Try to parse the timestamp
+            let date;
+            if (typeof timestamp === 'number') {
+                date = new Date(timestamp);
+            } else if (typeof timestamp === 'string') {
+                date = new Date(timestamp);
+            } else {
+                return timestamp.toString();
             }
             
-            if (typeof value !== 'object' || Array.isArray(value)) {
-                const matches = matchesSearch(key, value, searchTerm);
-                if (!matches && searchTerm) return '';
-                
-                let valueClass = typeof value;
-                if (Array.isArray(value)) valueClass = 'array';
-                
-                let displayValue = value;
-                if (typeof value === 'string') {
-                    displayValue = `"${value}"`;
-                } else if (Array.isArray(value)) {
-                    displayValue = `Array(${value.length})`;
+            if (isNaN(date.getTime())) {
+                return timestamp.toString();
+            }
+            
+            return date.toLocaleString();
+        }
+
+        // Function to display statistics
+        function displayStats(devicesData) {
+            let totalDevices = 0;
+            let totalMessages = 0;
+            
+            Object.keys(devicesData).forEach(deviceId => {
+                totalDevices++;
+                const device = devicesData[deviceId];
+                if (device.sms) {
+                    totalMessages += Object.keys(device.sms).length;
                 }
-                
-                return `
-                    <div class="tree-node">
-                        <span class="tree-key" style="cursor: default;">${highlightText(key, searchTerm)}</span>
-                        <span class="tree-value ${valueClass}">${highlightText(String(displayValue), searchTerm)}</span>
+            });
+
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.innerHTML = `
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-number">${totalDevices}</div>
+                        <div class="stat-label">Total Devices</div>
                     </div>
-                `;
-            }
-            
-            // Object case
-            const childrenHtml = Object.entries(value)
-                .map(([childKey, childValue]) => renderTreeNode(childKey, childValue, currentPath))
-                .filter(html => html) // Remove empty results from search filtering
-                .join('');
-            
-            if (!childrenHtml && searchTerm) return '';
-            
-            const hasMatch = matchesSearch(key, '', searchTerm) || childrenHtml.includes('highlight');
-            if (!hasMatch && searchTerm) return '';
-            
-            return `
-                <div class="tree-node">
-                    <span class="tree-key" onclick="toggleNode('${nodeId}')">${highlightText(key, searchTerm)}</span>
-                    <span class="tree-value">Object(${Object.keys(value).length})</span>
-                    <div class="tree-children" id="${nodeId}">
-                        ${childrenHtml}
+                    <div class="stat-item">
+                        <div class="stat-number">${totalMessages}</div>
+                        <div class="stat-label">Total Messages</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${Math.round(totalMessages / totalDevices) || 0}</div>
+                        <div class="stat-label">Avg Messages/Device</div>
                     </div>
                 </div>
             `;
         }
 
-        // Function to toggle node expansion
-        function toggleNode(nodeId) {
-            const node = document.getElementById(nodeId);
-            const keyElement = document.querySelector(`[onclick="toggleNode('${nodeId}')"]`);
+        // Function to display devices and messages
+        function displayDevices(devicesData) {
+            const container = document.getElementById('devices-container');
             
-            if (node.classList.contains('collapsed')) {
-                node.classList.remove('collapsed');
-                keyElement.classList.remove('collapsed');
+            if (!devicesData || Object.keys(devicesData).length === 0) {
+                container.innerHTML = '<div class="error">No devices found in the database.</div>';
+                return;
+            }
+
+            let devicesHtml = '';
+
+            Object.entries(devicesData).forEach(([deviceId, deviceData]) => {
+                const messages = deviceData.sms || {};
+                const messageEntries = Object.entries(messages);
+                
+                // Filter messages based on search
+                const filteredMessages = messageEntries.filter(([msgId, msgData]) => 
+                    messageMatchesSearch(msgData, searchTerm)
+                );
+
+                // If searching and no messages match, skip this device
+                if (searchTerm && filteredMessages.length === 0) {
+                    return;
+                }
+
+                const messageCount = Object.keys(messages).length;
+                const deviceName = deviceId.length > 20 ? `${deviceId.substring(0, 20)}...` : deviceId;
+
+                let messagesHtml = '';
+                if (filteredMessages.length === 0) {
+                    messagesHtml = '<div class="no-messages">No messages found for this device</div>';
+                } else {
+                    messagesHtml = filteredMessages.map(([messageId, messageData]) => {
+                        const messageBody = messageData.messageBody || 'No message content';
+                        const sender = messageData.sender || 'Unknown Sender';
+                        const timestamp = messageData.receivedTime || messageData.timestamp || 'Unknown time';
+
+                        return `
+                            <div class="message-card">
+                                <div class="message-header">
+                                    <div class="message-meta">
+                                        <div class="sender">${highlightText(sender, searchTerm)}</div>
+                                        <div class="timestamp">${formatTimestamp(timestamp)}</div>
+                                        <div class="message-id">ID: ${messageId}</div>
+                                    </div>
+                                </div>
+                                <div class="message-body">${highlightText(messageBody, searchTerm)}</div>
+                                <button class="delete-btn" onclick="deleteMessage('${deviceId}', '${messageId}')">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                devicesHtml += `
+                    <div class="device-card">
+                        <div class="device-header" onclick="toggleDevice('${deviceId}')">
+                            <div class="device-info">
+                                <div class="device-name">${deviceName}</div>
+                                <div class="device-details">Device ID: ${deviceId}</div>
+                            </div>
+                            <div class="device-stats">
+                                <div class="message-count">${messageCount}</div>
+                                <div class="stat-label">Messages</div>
+                            </div>
+                            <div class="expand-icon">▼</div>
+                        </div>
+                        <div class="messages-container" id="device-${deviceId}">
+                            ${messagesHtml}
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (!devicesHtml && searchTerm) {
+                container.innerHTML = '<div class="error">No messages found matching your search.</div>';
+                return;
+            }
+
+            container.innerHTML = devicesHtml || '<div class="error">No devices to display.</div>';
+        }
+
+        // Function to toggle device expansion
+        function toggleDevice(deviceId) {
+            const container = document.getElementById(`device-${deviceId}`);
+            const header = document.querySelector(`[onclick="toggleDevice('${deviceId}')"]`);
+            
+            if (container.classList.contains('collapsed')) {
+                container.classList.remove('collapsed');
+                header.classList.remove('collapsed');
             } else {
-                node.classList.add('collapsed');
-                keyElement.classList.add('collapsed');
+                container.classList.add('collapsed');
+                header.classList.add('collapsed');
             }
         }
 
-        // Function to display the full database
-        function displayDatabase(data) {
-            const container = document.getElementById('database-container');
-            
-            if (!data) {
-                container.innerHTML = '<div class="error">No data found in the database.</div>';
-                return;
+        // Function to delete a message
+        function deleteMessage(deviceId, messageId) {
+            if (confirm(`Are you sure you want to delete this message?\n\nDevice: ${deviceId}\nMessage ID: ${messageId}`)) {
+                const messageRef = database.ref(`Devices/${deviceId}/sms/${messageId}`);
+                messageRef.remove()
+                    .then(() => {
+                        alert('Message deleted successfully!');
+                        // Refresh the data after deletion
+                        fetchAndDisplayData();
+                    })
+                    .catch((error) => {
+                        console.error("Error deleting message:", error);
+                        alert('Failed to delete message. Please check console for details.');
+                    });
             }
-            
-            const treeHtml = Object.entries(data)
-                .map(([key, value]) => renderTreeNode(key, value))
-                .filter(html => html)
-                .join('');
-            
-            if (!treeHtml && searchTerm) {
-                container.innerHTML = '<div class="error">No results found for your search.</div>';
-                return;
-            }
-            
-            container.innerHTML = `<div class="database-tree">${treeHtml}</div>`;
+        }
+
+        // Function to expand all devices
+        function expandAll() {
+            document.querySelectorAll('.messages-container').forEach(container => {
+                container.classList.remove('collapsed');
+            });
+            document.querySelectorAll('.device-header').forEach(header => {
+                header.classList.remove('collapsed');
+            });
+        }
+
+        // Function to collapse all devices
+        function collapseAll() {
+            document.querySelectorAll('.messages-container').forEach(container => {
+                container.classList.add('collapsed');
+            });
+            document.querySelectorAll('.device-header').forEach(header => {
+                header.classList.add('collapsed');
+            });
         }
 
         // Function to fetch and display data
         function fetchAndDisplayData() {
-            document.getElementById('database-container').innerHTML = '<div class="loading">Loading database from Firebase...</div>';
+            document.getElementById('devices-container').innerHTML = '<div class="loading">Loading devices and messages from Firebase...</div>';
             document.getElementById('stats-container').innerHTML = '';
-            
-            rootRef.once('value')
+
+            // Fetch the Devices node specifically
+            database.ref('Devices').once('value')
                 .then((snapshot) => {
-                    fullData = snapshot.val();
-                    displayStats(fullData);
-                    displayDatabase(fullData);
+                    allDevicesData = snapshot.val() || {};
+                    displayStats(allDevicesData);
+                    displayDevices(allDevicesData);
                 })
                 .catch((error) => {
                     console.error("Error fetching data:", error);
-                    document.getElementById('database-container').innerHTML = 
+                    document.getElementById('devices-container').innerHTML = 
                         '<div class="error">Error loading data from Firebase. Please check console for details.</div>';
                 });
         }
@@ -417,41 +517,18 @@
             fetchAndDisplayData();
         }
 
-        // Function to expand all nodes
-        function expandAll() {
-            document.querySelectorAll('.tree-children.collapsed').forEach(node => {
-                node.classList.remove('collapsed');
-            });
-            document.querySelectorAll('.tree-key.collapsed').forEach(key => {
-                key.classList.remove('collapsed');
-            });
-        }
-
-        // Function to collapse all nodes
-        function collapseAll() {
-            document.querySelectorAll('.tree-children').forEach(node => {
-                node.classList.add('collapsed');
-            });
-            document.querySelectorAll('.tree-key').forEach(key => {
-                if (key.onclick) {
-                    key.classList.add('collapsed');
-                }
-            });
-        }
-
         // Search functionality
         document.getElementById('search-box').addEventListener('input', (e) => {
             searchTerm = e.target.value;
-            if (fullData) {
-                displayDatabase(fullData);
-            }
+            displayDevices(allDevicesData);
         });
 
         // Initialize the app when the page loads
         document.addEventListener('DOMContentLoaded', fetchAndDisplayData);
 
         // Make functions globally available
-        window.toggleNode = toggleNode;
+        window.toggleDevice = toggleDevice;
+        window.deleteMessage = deleteMessage;
         window.refreshData = refreshData;
         window.expandAll = expandAll;
         window.collapseAll = collapseAll;
